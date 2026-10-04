@@ -9,9 +9,12 @@ dotenv.config();
 const router = Router();
 
 router.get("/", geocodeRateLimiter, async (req, res) => {
-    console.log("Geocode requester IP:", req.ip);
-    console.log("Geocode rate limit info:", (req as any).rateLimit);
   const start = Date.now();
+  console.log("Geocode request", {
+    ip: req.ip,
+    xForwardedFor: req.get("x-forwarded-for"),
+    rateLimit: (req as any).rateLimit,
+  });
 
   const { latitude, longitude } = req.query;
 
@@ -35,12 +38,19 @@ router.get("/", geocodeRateLimiter, async (req, res) => {
     // const data = await response.json();
     const cachedData = await redisClient.get(cacheKey);
     if (cachedData) {
-      console.log(`Cache hit took ${Date.now() - start}ms`);
-      console.log("Cache hit for geocode data", cachedData);
+      const responseTimeMs = Date.now() - start;
+      res.setHeader("X-Redis-Cache", "HIT");
+      res.setHeader("X-Response-Time-Ms", responseTimeMs.toString());
+      console.log("Geocode Redis cache hit", {
+        cacheKey,
+        responseTimeMs,
+      });
       return res.json(JSON.parse(cachedData));
     }
 
-    console.log("Cache miss for geocode data, fetching from Mapbox API");
+    console.log("Geocode Redis cache miss, fetching from Mapbox API", {
+      cacheKey,
+    });
     const MAPBOX_TOKEN = process.env.VITE_MAPBOX_TOKEN;
     const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${MAPBOX_TOKEN}`;
 
@@ -50,7 +60,13 @@ router.get("/", geocodeRateLimiter, async (req, res) => {
     await redisClient.set(cacheKey, JSON.stringify({ address: place }), {
       EX: 60 * 5,
     });
-    console.log(`Cache miss took ${Date.now() - start}ms`);
+    const responseTimeMs = Date.now() - start;
+    res.setHeader("X-Redis-Cache", "MISS");
+    res.setHeader("X-Response-Time-Ms", responseTimeMs.toString());
+    console.log("Geocode Redis cache stored", {
+      cacheKey,
+      responseTimeMs,
+    });
     return res.json({ address: place });
   } catch (error) {
     console.error("Error fetching geocode data:", error);

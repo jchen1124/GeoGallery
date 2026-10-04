@@ -21,9 +21,17 @@ const SIGNED_URL_EXPIRES_IN_SECONDS = 60 * 60 * 24 * 7; // 7 days
 // Keep Redis shorter than the S3 URL lifetime so cached URLs expire first.
 const SIGNED_URL_CACHE_TTL_SECONDS = 60 * 60 * 24 * 6; // 6 days
 
+type ImageUrlResult = {
+  imageUrl: string | null;
+  cacheStatus: "hit" | "miss" | "skipped";
+};
+
 const getImageUrl = async (imagePath: string | null) => {
   if (!imagePath) {
-    return null;
+    return {
+      imageUrl: null,
+      cacheStatus: "skipped",
+    } satisfies ImageUrlResult;
   }
 
   const cacheKey = `s3:signed-url:v1:${imagePath}`;
@@ -33,7 +41,10 @@ const getImageUrl = async (imagePath: string | null) => {
 
   if (cachedUrl) {
     console.log("S3 signed URL cache hit:", cacheKey);
-    return cachedUrl;
+    return {
+      imageUrl: cachedUrl,
+      cacheStatus: "hit",
+    } satisfies ImageUrlResult;
   }
 
   console.log("S3 signed URL cache miss:", cacheKey);
@@ -60,10 +71,14 @@ const getImageUrl = async (imagePath: string | null) => {
     EX: SIGNED_URL_CACHE_TTL_SECONDS,
   });
 
-  return signedUrl;
+  return {
+    imageUrl: signedUrl,
+    cacheStatus: "miss",
+  } satisfies ImageUrlResult;
 };
 
 router.get("/", async (req, res) => {
+  const start = Date.now();
   const { user_id } = req.query;
 
   let query = supabase
@@ -79,12 +94,35 @@ router.get("/", async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 
+  const imageCacheStats = {
+    hit: 0,
+    miss: 0,
+    skipped: 0,
+  };
+
   const postsWithImageUrls = await Promise.all(
-    (data ?? []).map(async (post) => ({
-      ...post,
-      imageUrl: await getImageUrl(post.image_url),
-    })),
+    (data ?? []).map(async (post) => {
+      const result = await getImageUrl(post.image_url);
+      imageCacheStats[result.cacheStatus] += 1;
+
+      return {
+        ...post,
+        imageUrl: result.imageUrl,
+      };
+    }),
   );
+
+  const responseTimeMs = Date.now() - start;
+  res.setHeader(
+    "X-S3-Url-Cache",
+    `hit=${imageCacheStats.hit}; miss=${imageCacheStats.miss}; skipped=${imageCacheStats.skipped}`,
+  );
+  res.setHeader("X-Response-Time-Ms", responseTimeMs.toString());
+  console.log("Posts response", {
+    count: postsWithImageUrls.length,
+    imageCacheStats,
+    responseTimeMs,
+  });
 
   res.json(postsWithImageUrls);
 });

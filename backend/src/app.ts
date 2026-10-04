@@ -3,6 +3,7 @@ import cors from "cors";
 import postsRoutes from "./routes/posts";
 import geocodeRoutes from "./routes/geocode";
 import bookmarksRoutes from "./routes/bookmarks";
+import healthRoutes from "./routes/health";
 
 const app = express();
 app.set("trust proxy", 1); // Trust first proxy for rate limiting
@@ -28,9 +29,18 @@ app.use(
       return callback(new Error(`CORS blocked for origin: ${origin}`));
     },
     credentials: true,
+    exposedHeaders: [
+      "RateLimit",
+      "RateLimit-Policy",
+      "Retry-After",
+      "X-Redis-Cache",
+      "X-Response-Time-Ms",
+      "X-S3-Url-Cache",
+    ],
   })
 ); //allows different servers to communicate with each other
 app.use(express.json());
+app.use("/health", healthRoutes);
 app.use("/api/posts", postsRoutes);
 app.use("/geocode", geocodeRoutes);
 app.use("/api/bookmarks", bookmarksRoutes);
