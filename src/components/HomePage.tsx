@@ -38,9 +38,19 @@ const HomePage = () => {
         </div>
 
         {!user && (
-          <button className="continue-guest" onClick={() => navigate("/map")}>
-            Explore as Guest
-          </button>
+          <div className="nav-google-login">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() =>
+                setLoginError("Google sign-in was cancelled or failed.")
+              }
+              shape="pill"
+              size="large"
+              text="signin_with"
+              theme="outline"
+              width="210"
+            />
+          </div>
         )}
       </nav>
 
@@ -68,19 +78,6 @@ const HomePage = () => {
                 Open Map
               </button>
             ) : (
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={() =>
-                  setLoginError("Google sign-in was cancelled or failed.")
-                }
-                shape="pill"
-                size="large"
-                text="signin_with"
-                theme="outline"
-              />
-            )}
-
-            {!user && (
               <button
                 className="guest-link"
                 onClick={() => navigate("/map")}
