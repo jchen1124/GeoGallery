@@ -201,6 +201,33 @@
   background: #eef1f1;
 }
 
+.menu-option-signout {
+  margin-top: 4px;
+  border-top: 1px solid #e7ebec;
+  border-radius: 0 0 10px 10px;
+  color: #a33f3f;
+}
+
+.menu-option-signout .menu-option-icon {
+  color: #a33f3f;
+}
+
+.menu-option-signout .menu-option-copy strong {
+  color: #8f3434;
+}
+
+.menu-option:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.menu-error {
+  margin: 3px 10px 7px;
+  color: #a33f3f;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
 .map-page[data-theme="dark"] .menu-container,
 .map-page[data-theme="dark"] .menu-popover {
   border-color: rgba(255, 255, 255, 0.12);
@@ -262,6 +289,16 @@
 .map-page[data-theme="dark"] .menu-option-status {
   background: #344b43;
   color: #c8e0d7;
+}
+
+.map-page[data-theme="dark"] .menu-option-signout {
+  border-top-color: #34454c;
+}
+
+.map-page[data-theme="dark"] .menu-option-signout .menu-option-icon,
+.map-page[data-theme="dark"] .menu-option-signout .menu-option-copy strong,
+.map-page[data-theme="dark"] .menu-error {
+  color: #ffabab;
 }
 
 @keyframes menuPopoverIn {

@@ -55,7 +55,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // End user session and clear auth state
   const signOut = async () => {
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut({
+    scope: "local",
+  });
+
+  if (error) {
+    throw error;
+  }
   };
 
   // Provide auth data to all child components
