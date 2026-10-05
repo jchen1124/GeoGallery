@@ -2,16 +2,30 @@ import { useNavigate } from "react-router-dom";
 import "../styles/HomePage.css";
 import { useAuth } from "../context/AuthContext";
 import logo from "../assets/logo2.jpg";
+import { useState } from "react";
+import {
+  GoogleLogin,
+  type CredentialResponse,
+} from "@react-oauth/google";
 
 const HomePage = () => {
   const { user, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
+  const [loginError, setLoginError] = useState("");
 
-  const handleExploreClick = () => {
-    if (user) {
+  const handleGoogleSuccess = async (response: CredentialResponse) => {
+    if (!response.credential) {
+      setLoginError("Google did not return a login credential.");
+      return;
+    }
+
+    try {
+      setLoginError("");
+      await signInWithGoogle(response.credential);
       navigate("/map");
-    } else {
-      signInWithGoogle();
+    } catch (error) {
+      console.error("Google sign-in failed:", error);
+      setLoginError("Unable to sign in with Google. Please try again.");
     }
   };
 
@@ -24,9 +38,19 @@ const HomePage = () => {
         </div>
 
         {!user && (
-          <button className="continue-guest" onClick={() => navigate("/map")}>
-            Explore as Guest
-          </button>
+          <div className="nav-google-login">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() =>
+                setLoginError("Google sign-in was cancelled or failed.")
+              }
+              shape="pill"
+              size="large"
+              text="signin_with"
+              theme="outline"
+              width="210"
+            />
+          </div>
         )}
       </nav>
 
@@ -46,11 +70,14 @@ const HomePage = () => {
           </p>
 
           <div className="landing-actions">
-            <button className="explore-button" onClick={handleExploreClick}>
-              {user ? "Open Map" : "Sign in with Google"}
-            </button>
-
-            {!user && (
+            {user ? (
+              <button
+                className="explore-button"
+                onClick={() => navigate("/map")}
+              >
+                Open Map
+              </button>
+            ) : (
               <button
                 className="guest-link"
                 onClick={() => navigate("/map")}
@@ -60,6 +87,12 @@ const HomePage = () => {
               </button>
             )}
           </div>
+
+          {loginError && (
+            <p className="login-error" role="alert">
+              {loginError}
+            </p>
+          )}
         </div>
 
       </section>

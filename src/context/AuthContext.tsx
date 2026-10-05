@@ -6,7 +6,7 @@ import type { User, Session } from "@supabase/supabase-js";
 type AuthContextType = {
   user: User | null; // Current user object or null if not logged in
   session: Session | null; // Current session with tokens
-  signInWithGoogle: () => Promise<void>; // Function to trigger Google login
+  signInWithGoogle: (idToken: string) => Promise<void>; // Function to log in with Google OAuth
   signOut: () => Promise<void>; // Function to log out
   loading: boolean; // Whether auth state is still being checked
 };
@@ -42,18 +42,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Trigger Google OAuth sign-in popup
-  const signInWithGoogle = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: window.location.origin + "/map", // Where to redirect after login
-      },
-    });
-  };
+  const signInWithGoogle = async (idToken: string) => {
+  const { error } = await supabase.auth.signInWithIdToken({
+    provider: "google",
+    token: idToken,
+  });
+
+  if (error) {
+    throw error;
+  }
+};
 
   // End user session and clear auth state
   const signOut = async () => {
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut({
+    scope: "local",
+  });
+
+  if (error) {
+    throw error;
+  }
   };
 
   // Provide auth data to all child components

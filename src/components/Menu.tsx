@@ -3,6 +3,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import BookmarkBorderOutlinedIcon from "@mui/icons-material/BookmarkBorderOutlined";
 import LoginOutlinedIcon from "@mui/icons-material/LoginOutlined";
+import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import MyLocationOutlinedIcon from "@mui/icons-material/MyLocationOutlined";
 import PhotoLibraryOutlinedIcon from "@mui/icons-material/PhotoLibraryOutlined";
 import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
@@ -35,9 +36,27 @@ const Menu = ({
   onToggleTheme,
   onOpenHelp,
 }: MenuProps) => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+  const [signOutError, setSignOutError] = useState("");
+
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    setSignOutError("");
+
+    try {
+      await signOut();
+      setOpen(false);
+      navigate("/");
+    } catch (error) {
+      console.error("Sign out failed:", error);
+      setSignOutError("Unable to sign out. Please try again.");
+    } finally {
+      setSigningOut(false);
+    }
+  };
 
   const fullName = user?.user_metadata.full_name || "Guest";
   const firstName = fullName.split(" ")[0];
@@ -183,6 +202,28 @@ const Menu = ({
             </button>
 
             {themeOption}
+
+            <button
+              type="button"
+              className="menu-option menu-option-signout"
+              onClick={handleSignOut}
+              disabled={signingOut}
+              role="menuitem"
+            >
+              <span className="menu-option-icon">
+                <LogoutOutlinedIcon fontSize="small" />
+              </span>
+              <span className="menu-option-copy">
+                <strong>{signingOut ? "Signing out…" : "Sign out"}</strong>
+                <small>End this session on this device</small>
+              </span>
+            </button>
+
+            {signOutError && (
+              <p className="menu-error" role="alert">
+                {signOutError}
+              </p>
+            )}
           </div>
         </div>
       )}
