@@ -1,17 +1,22 @@
 import { useNavigate } from "react-router-dom";
+import Dialog from "@mui/material/Dialog";
+import CloseIcon from "@mui/icons-material/Close";
 import "../styles/HomePage.css";
 import { useAuth } from "../context/AuthContext";
 import logo from "../assets/logo2.jpg";
 import { useState } from "react";
-import {
-  GoogleLogin,
-  type CredentialResponse,
-} from "@react-oauth/google";
+import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
 
 const HomePage = () => {
   const { user, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
+  const [loginOpen, setLoginOpen] = useState(false);
   const [loginError, setLoginError] = useState("");
+
+  const closeLogin = () => {
+    setLoginOpen(false);
+    setLoginError("");
+  };
 
   const handleGoogleSuccess = async (response: CredentialResponse) => {
     if (!response.credential) {
@@ -22,6 +27,7 @@ const HomePage = () => {
     try {
       setLoginError("");
       await signInWithGoogle(response.credential);
+      closeLogin();
       navigate("/map");
     } catch (error) {
       console.error("Google sign-in failed:", error);
@@ -38,19 +44,13 @@ const HomePage = () => {
         </div>
 
         {!user && (
-          <div className="nav-google-login">
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={() =>
-                setLoginError("Google sign-in was cancelled or failed.")
-              }
-              shape="pill"
-              size="large"
-              text="signin_with"
-              theme="outline"
-              width="210"
-            />
-          </div>
+          <button
+            className="nav-signin-button"
+            type="button"
+            onClick={() => setLoginOpen(true)}
+          >
+            Sign in
+          </button>
         )}
       </nav>
 
@@ -87,15 +87,47 @@ const HomePage = () => {
               </button>
             )}
           </div>
-
-          {loginError && (
-            <p className="login-error" role="alert">
-              {loginError}
-            </p>
-          )}
         </div>
-
       </section>
+
+      <Dialog
+        open={loginOpen && !user}
+        onClose={closeLogin}
+        aria-labelledby="login-dialog-title"
+        aria-describedby="login-dialog-description"
+        slotProps={{ paper: { className: "login-dialog" } }}
+      >
+        <button
+          className="login-dialog-close"
+          type="button"
+          aria-label="Close sign in dialog"
+          onClick={closeLogin}
+        >
+          <CloseIcon fontSize="small" />
+        </button>
+        <h2 id="login-dialog-title">Sign in to GeoGallery</h2>
+        <p id="login-dialog-description">
+          Welcome back! Please sign in to continue.
+        </p>
+        <div className="login-dialog-provider">
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() =>
+              setLoginError("Google sign-in failed. Please try again.")
+            }
+            shape="pill"
+            size="large"
+            text="continue_with"
+            theme="outline"
+            width="260"
+          />
+        </div>
+        {loginError && (
+          <p className="login-error" role="alert">
+            {loginError}
+          </p>
+        )}
+      </Dialog>
     </main>
   );
 };

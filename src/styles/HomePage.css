@@ -119,19 +119,8 @@
   margin-top: 34px;
 }
 
-.nav-google-login {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-}
-
-.login-error {
-  margin: 14px 0 0;
-  color: #ffb4b4;
-  font-size: 14px;
-}
-
 .explore-button,
+.nav-signin-button,
 .guest-link {
   font-family: var(--calistoga);
   cursor: pointer;
@@ -154,6 +143,75 @@
 .explore-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 18px 34px rgba(76, 202, 237, 0.26);
+}
+
+.nav-signin-button {
+  padding: 11px 20px;
+  border: 1px solid rgba(246, 251, 255, 0.3);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #f6fbff;
+  font-size: 14px;
+}
+
+.nav-signin-button:hover {
+  background: rgba(255, 255, 255, 0.16);
+  transform: translateY(-2px);
+}
+
+.login-dialog {
+  position: relative;
+  width: min(380px, calc(100vw - 32px));
+  margin: 16px;
+  padding: 36px 28px 32px;
+  border-radius: 18px !important;
+  background: #f9fcfd !important;
+  color: #17252d;
+  text-align: center;
+}
+
+.login-dialog-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #64757c;
+  cursor: pointer;
+}
+
+.login-dialog-close:hover {
+  background: #edf3f5;
+  color: #17252d;
+}
+
+.login-dialog h2 {
+  margin: 0;
+  font-family: var(--calistoga);
+  font-size: 26px;
+  font-weight: 400;
+}
+
+.login-dialog > p {
+  margin: 10px 0 0;
+  color: #63767f;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.login-dialog-provider {
+  display: flex;
+  justify-content: center;
+  margin-top: 28px;
+}
+
+.login-dialog .login-error {
+  color: #a33f3f;
 }
 
 .guest-link {
