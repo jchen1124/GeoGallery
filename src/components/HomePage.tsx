@@ -104,7 +104,7 @@ const HomePage = () => {
             <div className="landing-map" aria-label="Interactive preview of the GeoGallery map">
               {import.meta.env.VITE_MAPBOX_TOKEN ? (
                 <Map
-                  initialViewState={{ longitude: -20, latitude: 30, zoom: 1.55 }}
+                  initialViewState={{ longitude: -100, latitude: 45, zoom: 1.55 }}
                   mapboxAccessToken={import.meta.env.VITE_MAPBOX_TOKEN}
                   mapStyle="mapbox://styles/mapbox/light-v11"
                   scrollZoom={false}
