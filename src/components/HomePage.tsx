@@ -4,6 +4,7 @@ import Dialog from "@mui/material/Dialog";
 import CloseIcon from "@mui/icons-material/Close";
 import ArrowOutwardIcon from "@mui/icons-material/ArrowOutward";
 import PlaceOutlinedIcon from "@mui/icons-material/PlaceOutlined";
+import logo from "../assets/logo2.jpg";
 import Map, { Marker, Popup } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
 import "../styles/HomePage.css";
@@ -69,7 +70,7 @@ const HomePage = () => {
     <main className="landing-container">
       <header className="landing-nav">
         <a className="landing-brand" href="/" aria-label="GeoGallery home">
-          <span className="landing-brand-mark" aria-hidden="true"><PlaceOutlinedIcon fontSize="small" /></span>
+          <img className="landing-brand-logo" src={logo} alt="" />
           <span>GeoGallery</span>
         </a>
         <div className="landing-nav-actions">
